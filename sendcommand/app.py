@@ -2,10 +2,10 @@ import json
 import os
 
 import boto3
-import requests
 
 sns = boto3.client("sns")
 table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
+# https://github.com/boto/boto3/issues/1914
 apigw = boto3.client(
     "apigatewaymanagementapi", endpoint_url=os.environ.get("CONNECTION_BASE_URL")
 )
