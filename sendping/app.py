@@ -19,7 +19,7 @@ def handler(event, context):
     res = table.scan(Select="ALL_ATTRIBUTES")
     connIDs = [dict["connectionId"] for dict in res["Items"]]
     for val in connIDs:  # Send to all connections
-        payload = json.dumps({"type": "nop", "sub": "ping"})
+        payload = json.dumps({"type": "nop", "subtype": "ping"})
         apigw.post_to_connection(Data=payload, ConnectionId=val)
     return {
         "isBase64Encoded": False,
