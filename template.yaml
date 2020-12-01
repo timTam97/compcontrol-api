@@ -5,6 +5,18 @@ Description: >
 
   SAM Template for compcontrol-api
 
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: compcontrol-api
+    Description: This is a serverless AWS application that enables remote computer control. It consists of a WebSocket API which clients connect to, and a REST API for sending commands to those clients via the persistent WebSocket connection.
+    Author: Tim Sam
+    SpdxLicenseId: BSD-3-Clause
+    LicenseUrl: LICENSE
+    ReadmeUrl: README.md
+    HomePageUrl: https://github.com/timTam97/compcontrol-api
+    SemanticVersion: 1.0.0
+    SourceCodeUrl: https://github.com/timTam97/compcontrol-api
+
 Parameters:
   TableName:
     Type: String
