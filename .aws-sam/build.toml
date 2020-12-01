@@ -19,4 +19,10 @@ runtime = "python3.8"
 source_md5 = ""
 functions = ["SendCommandFunction"]
 
+[function_build_definitions.a9972a78-2173-4329-ae46-6a9369ebf562]
+codeuri = "sendping/"
+runtime = "python3.8"
+source_md5 = ""
+functions = ["SendPingFunction"]
+
 [layer_build_definitions]

@@ -176,6 +176,42 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendCommandFunction
       Principal: apigateway.amazonaws.com
+  
+  SendPingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: sendping/
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          CONNECTION_BASE_URL: !Join ['', ['https://', !Ref ComputerControl, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/Prod'] ]
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref TableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - 'execute-api:ManageConnections'
+          Resource:
+          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*'
+      Events:
+        SendPing:
+          Properties:
+            Description: Basic keep-alive ping for WebSocket
+            Enabled: True
+            Name: ScheduledPing
+            Schedule: rate(1 minute)
+          Type: Schedule
+  SendPingPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ComputerControl
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SendPingFunction
+      Principal: apigateway.amazonaws.com
 
 Outputs:
   ConnectionsTableArn:
