@@ -1,3 +1,7 @@
+"""
+Adds a connectionID to the dynamoDB table.
+Invoked when a client connects to the websocket.
+"""
 import json
 import os
 

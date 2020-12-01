@@ -1,3 +1,8 @@
+"""
+Sends a specified command to all connected websocket clients. Commands are
+checked before sending to ensure they are legitimate (see the template file
+for allowed commands)
+"""
 import json
 import os
 

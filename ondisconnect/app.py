@@ -1,3 +1,7 @@
+"""
+Removes a connectionID from the dynamoDB table.
+Invoked when a client disconnects from the websocket connection.
+"""
 import json
 import os
 
