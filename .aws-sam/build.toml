@@ -13,14 +13,8 @@ runtime = "python3.8"
 source_md5 = ""
 functions = ["OnDisconnectFunction"]
 
-[function_build_definitions.443e5535-bf21-496e-b8a7-1b964e9d8b23]
-codeuri = "sendmessage/"
-runtime = "python3.8"
-source_md5 = ""
-functions = ["SendMessageFunction"]
-
-[function_build_definitions.692e170d-24bd-4bbf-8853-b3b90322815b]
-codeuri = "send_command/"
+[function_build_definitions.e37d7e35-ef9d-44ed-989a-17db25011903]
+codeuri = "sendcommand/"
 runtime = "python3.8"
 source_md5 = ""
 functions = ["SendCommandFunction"]
