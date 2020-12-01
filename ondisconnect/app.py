@@ -3,7 +3,6 @@ import os
 
 import boto3
 
-sns = boto3.client("sns")
 table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
