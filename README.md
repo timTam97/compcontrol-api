@@ -4,7 +4,7 @@ This is a serverless AWS application that enables remote computer control. It co
 
 ## Client Apps
 
-[pushbullet-automation-haskell](https://github.com/timTam97/pushbullet-automation-haskell) is a client app that acts as a consumer of this API. If you deploy this app on AWS and run the client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
+[compcontrol-client-hs](https://github.com/timTam97/compcontrol-client-hs) is a client app that acts as a consumer of this API. If you deploy this app on AWS and run the client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
 
 ## Setup
 
