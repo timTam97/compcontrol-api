@@ -238,7 +238,7 @@ Resources:
         SendCommand:
           Type: Api
           Properties:
-            Path: /{command}
+            Path: /send/{command}
             Method: post
             # Auth: 
             #   ApiKeyRequired: True
@@ -309,7 +309,7 @@ Resources:
         SendCommand:
           Type: Api
           Properties:
-            Path: /
+            Path: /getkey
             Method: get
   GenerateKeyPermission:
     Type: AWS::Lambda::Permission
