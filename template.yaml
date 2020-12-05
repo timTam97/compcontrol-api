@@ -43,13 +43,31 @@ Resources:
       Name: ComputerControl
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.action"
- 
+
+  WebsocketAuth:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      Name: WebsocketAuth
+      ApiId: !Ref ComputerControl
+      AuthorizerType: REQUEST
+      IdentitySource: [route.request.header.Auth]
+      AuthorizerUri: 
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthWebsocketFunction.Arn}/invocations
+  
+  # SendCommand:
+  #   Type: AWS::ApiGatewayV2::Api
+  #   Properties:
+  #     Name: SendCommand
+  #     ProtocolType: HTTP
+
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref ComputerControl
       RouteKey: $connect
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref WebsocketAuth
       OperationName: ConnectRoute
       Target: !Join
         - '/'
@@ -106,6 +124,18 @@ Resources:
       AttributeDefinitions:
       - AttributeName: "connectionId"
         AttributeType: "S"
+      - AttributeName: "associatedKey"
+        AttributeType: "S"
+      GlobalSecondaryIndexes:
+      - IndexName: "keyIndex"
+        KeySchema:
+        - AttributeName: "associatedKey"
+          KeyType: "HASH"
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
       KeySchema:
       - AttributeName: "connectionId"
         KeyType: "HASH"
@@ -183,12 +213,21 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref TableName
+          KEY_TABLE_NAME: !Ref KeyTableName
           CONNECTION_BASE_URL: !Join ['', ['https://', !Ref ComputerControl, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/Prod'] ]
           # A bit hacky but gets the job done
           ALLOWED_COMMANDS: '{"command1": "sleep", "command2": "hibernate", "command3": "shutdown","command4": "lock"}'
       Policies:
       - DynamoDBCrudPolicy:
           TableName: !Ref TableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - 'execute-api:ManageConnections'
+          Resource:
+          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*'
+      - DynamoDBCrudPolicy:
+          TableName: !Ref KeyTableName
       - Statement:
         - Effect: Allow
           Action:
@@ -279,6 +318,33 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GenerateKeyFunction
+      Principal: apigateway.amazonaws.com
+
+  AuthWebsocketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: authwebsocket/
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref KeyTableName
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref KeyTableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - 'execute-api:ManageConnections'
+          Resource:
+          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*'
+  AuthWebsocketPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ComputerControl
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AuthWebsocketFunction
       Principal: apigateway.amazonaws.com
 
 Outputs:

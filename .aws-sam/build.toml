@@ -31,4 +31,10 @@ runtime = "python3.8"
 source_md5 = ""
 functions = ["GenerateKeyFunction"]
 
+[function_build_definitions.1f3458cd-8cf6-440f-9e66-6d1fffb18bf6]
+codeuri = "authwebsocket/"
+runtime = "python3.8"
+source_md5 = ""
+functions = ["AuthWebsocketFunction"]
+
 [layer_build_definitions]
