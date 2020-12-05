@@ -25,4 +25,10 @@ runtime = "python3.8"
 source_md5 = ""
 functions = ["SendPingFunction"]
 
+[function_build_definitions.02aa1b2f-eebd-4b07-9e58-d1cb980f1621]
+codeuri = "generatekey/"
+runtime = "python3.8"
+source_md5 = ""
+functions = ["GenerateKeyFunction"]
+
 [layer_build_definitions]

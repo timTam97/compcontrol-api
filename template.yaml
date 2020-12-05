@@ -27,6 +27,15 @@ Parameters:
     AllowedPattern: ^[A-Za-z_]+$
     ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
 
+  KeyTableName:
+    Type: String
+    Default: 'compcontrol_keys'
+    Description: (Required) The name of the DynamoDB to store API keys after generation. Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: 'Required. Can be characters and underscore only. No numbers or special characters allowed.'
+
 Resources:
   ComputerControl:
     Type: AWS::ApiGatewayV2::Api
@@ -106,7 +115,21 @@ Resources:
       SSESpecification:
         SSEEnabled: True
       TableName: !Ref TableName
- 
+  KeyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: "key"
+        AttributeType: "S"
+      KeySchema:
+      - AttributeName: "key"
+        KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: True
+      TableName: !Ref KeyTableName
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -223,6 +246,39 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendPingFunction
+      Principal: apigateway.amazonaws.com
+
+  GenerateKeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generatekey/
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref KeyTableName
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref KeyTableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - 'execute-api:ManageConnections'
+          Resource:
+          - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*'
+      Events:
+        SendCommand:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+  GenerateKeyPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ComputerControl
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GenerateKeyFunction
       Principal: apigateway.amazonaws.com
 
 Outputs:
