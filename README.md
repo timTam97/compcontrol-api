@@ -2,6 +2,10 @@
 
 This is a serverless AWS application that enables remote computer control. It consists of a WebSocket API which clients connect to, and a REST API for sending commands to those clients via the persistent WebSocket connection. This app provides the backend Lambda functions, DynamoDB table, and API gateways needed to create this API.
 
+## Try it out!
+
+This API is live at `https://*.timsam.live`. See the API reference below for details.
+
 ## Client Apps
 
 [compcontrol-client-hs](https://github.com/timTam97/compcontrol-client-hs) is a client app that acts as a consumer of this API. If you deploy the API on AWS and run the client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
@@ -20,7 +24,9 @@ sam deploy --guided
 
 ### WebSocket event stream
 
-After building and/or deploying the stack, you will see some outputs. The output called `WebSocketURI` is the URI that you will need to connect via a secure WebSocket client.
+You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.live/getkey to get your key.
+
+After you have your key, you can now connect to the WebSocket as well as send commands. The URI for connecting to the websocket is `wss://wss.timsam.live/`. Pass your authentication token in the header with key `auth`.
 
 All messages sent are JSON objects with a `type` key, with an optional `subtype` key. 
 
@@ -33,12 +39,13 @@ All messages sent are JSON objects with a `type` key, with an optional `subtype`
 
 ### REST API for sending commands
 
-The `SendCommandURL` in the outputs of the AWS app indicates the URL that you should make a `POST` web request to in order to send the command to all clients that are currently connected to the WebSocket.
+The URL to send commands to is `https://command.timsam.live/send/<command>`. Replace &lt;command> with the command you want to send to the client. Place your auth token in the `auth` part of the header.
 
-You should append your command to the end of this URL. For example, if you wanted to send a sleep command:
+For example, if you wanted to send a sleep command:
 
 ```
-curl -X POST https://xxxxxxxx.execute-api.ap-southeast-2.amazonaws.com/Prod/sleep
+curl -H "auth: <your_token_here>" \
+     -X POST https://command.timsam.live/send/sleep
 ```
 
 The API will return a status code and JSON indicating success or failure.
