@@ -5,7 +5,7 @@ Invoked on a GET request to our API.
 """
 import json
 import os
-import random
+import secrets
 import string
 
 import boto3
@@ -15,9 +15,8 @@ table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 def handler(event, context):
     key = "".join(
-        random.choices(
-            string.ascii_uppercase + string.digits + string.ascii_lowercase, k=64
-        )
+        secrets.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase)
+        for _ in range(64)
     )
     table.put_item(Item={"key": key})
     return {
