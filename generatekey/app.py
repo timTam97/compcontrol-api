@@ -1,6 +1,7 @@
 """
-Generates an API key, adds it to the DB and sends it to the caller.
-Invoked on a GET request to an implicit API.
+Generates an API key, adds it to the DB of
+generated keys and sends it to the caller.
+Invoked on a GET request to our API.
 """
 import json
 import os

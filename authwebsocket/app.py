@@ -1,5 +1,7 @@
 """
-TODO
+Lambda authorizer for when clients try to connect
+to the websocket. We check that their key is present
+in the DB of generated keys.
 """
 import os
 
@@ -29,6 +31,9 @@ def deny(resource):
 
 
 def generate_policy(principal_id, effect, resource):
+    """
+    Generates an IAM policy.
+    """
     return {
         "principalId": principal_id,
         "policyDocument": {
@@ -44,16 +49,3 @@ def generate_policy(principal_id, effect, resource):
         "context": {"stringKey": "value", "numberKey": "1", "booleanKey": "true"},
         "usageIdentifierKey": "{api-key}",
     }
-
-    # auth_response = {}
-    # auth_response["principalId"] = principal_id
-    # policy_document = {}
-    # policy_document["Version"] = "2012-10-17"
-    # policy_document["Statement"] = []
-    # statement_one = {}
-    # statement_one["Action"] = "execute-api:Invoke"
-    # statement_one["Effect"] = effect
-    # statement_one["Resource"] = resource
-    # policy_document.get("Statement")[0] = statement_one
-    # auth_response["policyDocument"] = policy_document
-    # return auth_response

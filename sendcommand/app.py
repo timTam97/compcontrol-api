@@ -1,7 +1,9 @@
 """
-Sends a specified command to all connected websocket clients. Commands are
-checked before sending to ensure they are legitimate (see the template file
-for allowed commands)
+Sends a specified command to a websocket client.
+We choose which client gets the command based on the
+auth token that is passed in.
+Commands are checked before sending to ensure they are
+legitimate (see the template file for allowed commands)
 """
 import json
 import os
