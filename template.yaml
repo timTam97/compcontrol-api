@@ -50,7 +50,7 @@ Resources:
       Name: WebsocketAuth
       ApiId: !Ref ComputerControl
       AuthorizerType: REQUEST
-      IdentitySource: [route.request.header.Auth]
+      IdentitySource: [route.request.header.auth]
       AuthorizerUri: 
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthWebsocketFunction.Arn}/invocations

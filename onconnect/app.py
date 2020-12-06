@@ -11,7 +11,7 @@ table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
 def handler(event, context):
-    key = event["headers"]["Auth"]
+    key = event["headers"]["auth"]
     table.put_item(
         Item={
             "connectionId": event["requestContext"]["connectionId"],

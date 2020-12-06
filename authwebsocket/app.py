@@ -10,12 +10,11 @@ key_table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
 def handler(event, context):
-    print(event)
     method = event["methodArn"]
-    res = key_table.query(
-        KeyConditionExpression=Key("key").eq(event["headers"]["Auth"])
-    )
-    print(res)
+    auth_token = event["headers"].get("auth")
+    if auth_token is None:
+        return deny(method)
+    res = key_table.query(KeyConditionExpression=Key("key").eq(auth_token))
     if len(res["Items"]) == 0:
         return deny(method)
     return allow(method)
