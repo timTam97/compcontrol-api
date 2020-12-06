@@ -4,11 +4,11 @@ This is a serverless AWS application that enables remote computer control. It co
 
 ## Try it out!
 
-This API is live at `https://*.timsam.live`. See the API reference below for details.
+This API is live at `https://*.timsam.live`. See the API reference below for details, and the section just below this one for an app that uses this API.
 
 ## Client Apps
 
-[compcontrol-client-hs](https://github.com/timTam97/compcontrol-client-hs) is a client app that acts as a consumer of this API. If you deploy the API on AWS and run the client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
+[compcontrol-client-hs](https://github.com/timTam97/compcontrol-client-hs) is a client app that interfaces with this API. If you get yourself an API key and run this client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
 
 ## Setup
 
