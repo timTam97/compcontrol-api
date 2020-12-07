@@ -14,7 +14,7 @@ Metadata:
     Author: Tim Sam
     SpdxLicenseId: BSD-3-Clause
     LicenseUrl: s3://aws-comp-control-api/ce643120570cb08790af46f248b3b91d
-    ReadmeUrl: s3://aws-comp-control-api/56f3a528619833418aa4f6c3027e0a1a
+    ReadmeUrl: s3://aws-comp-control-api/0fae21397be78b10f0dba299fa115224
     HomePageUrl: https://github.com/timTam97/compcontrol-api
     SemanticVersion: 1.0.0
     SourceCodeUrl: https://github.com/timTam97/compcontrol-api
@@ -29,6 +29,16 @@ Parameters:
     AllowedPattern: ^[A-Za-z_]+$
     ConstraintDescription: Required. Can be characters and underscore only. No numbers
       or special characters allowed.
+  KeyTableName:
+    Type: String
+    Default: compcontrol_keys
+    Description: (Required) The name of the DynamoDB to store API keys after generation.
+      Minimum 3 characters
+    MinLength: 3
+    MaxLength: 50
+    AllowedPattern: ^[A-Za-z_]+$
+    ConstraintDescription: Required. Can be characters and underscore only. No numbers
+      or special characters allowed.
 Resources:
   ComputerControl:
     Type: AWS::ApiGatewayV2::Api
@@ -36,13 +46,26 @@ Resources:
       Name: ComputerControl
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: $request.body.action
+  WebsocketAuth:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      Name: WebsocketAuth
+      ApiId:
+        Ref: ComputerControl
+      AuthorizerType: REQUEST
+      IdentitySource:
+      - route.request.header.auth
+      AuthorizerUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthWebsocketFunction.Arn}/invocations
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId:
         Ref: ComputerControl
       RouteKey: $connect
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId:
+        Ref: WebsocketAuth
       OperationName: ConnectRoute
       Target:
         Fn::Join:
@@ -103,6 +126,18 @@ Resources:
       AttributeDefinitions:
       - AttributeName: connectionId
         AttributeType: S
+      - AttributeName: associatedKey
+        AttributeType: S
+      GlobalSecondaryIndexes:
+      - IndexName: keyIndex
+        KeySchema:
+        - AttributeName: associatedKey
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
       KeySchema:
       - AttributeName: connectionId
         KeyType: HASH
@@ -113,10 +148,26 @@ Resources:
         SSEEnabled: true
       TableName:
         Ref: TableName
+  KeyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: key
+        AttributeType: S
+      KeySchema:
+      - AttributeName: key
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: true
+      TableName:
+        Ref: KeyTableName
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-comp-control-api/953f8278c7b5233c48a769c5d4b81713
+      CodeUri: s3://aws-comp-control-api/8d324774a2c9c7b8f8b0ef263541281d
       Handler: app.handler
       MemorySize: 256
       Runtime: python3.8
@@ -164,13 +215,15 @@ Resources:
   SendCommandFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-comp-control-api/13d810b3c96288e9032a78b3ee44f143
+      CodeUri: s3://aws-comp-control-api/b1084b945fcefbc31454c5041aae7507
       Handler: app.handler
       Runtime: python3.8
       Environment:
         Variables:
           TABLE_NAME:
             Ref: TableName
+          KEY_TABLE_NAME:
+            Ref: KeyTableName
           CONNECTION_BASE_URL:
             Fn::Join:
             - ''
@@ -191,11 +244,20 @@ Resources:
           - execute-api:ManageConnections
           Resource:
           - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: KeyTableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*
       Events:
         SendCommand:
           Type: Api
           Properties:
-            Path: /{command}
+            Path: /send/{command}
             Method: post
   SendCommandPermission:
     Type: AWS::Lambda::Permission
@@ -209,7 +271,7 @@ Resources:
   SendPingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://aws-comp-control-api/e032e658c543631bc2eb978ff2ebe701
+      CodeUri: s3://aws-comp-control-api/092dbfc1b3f88dd2031e9a09e984dc97
       Handler: app.handler
       Runtime: python3.8
       Environment:
@@ -250,6 +312,70 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName:
         Ref: SendPingFunction
+      Principal: apigateway.amazonaws.com
+  GenerateKeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://aws-comp-control-api/c1a507775ec72be98e8d7aaf5a049685
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: KeyTableName
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: KeyTableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*
+      Events:
+        SendCommand:
+          Type: Api
+          Properties:
+            Path: /getkey
+            Method: get
+  GenerateKeyPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - ComputerControl
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: GenerateKeyFunction
+      Principal: apigateway.amazonaws.com
+  AuthWebsocketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://aws-comp-control-api/5a89841c46a8d6d41d21479ad2d10770
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: KeyTableName
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: KeyTableName
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ComputerControl}/*
+  AuthWebsocketPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - ComputerControl
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: AuthWebsocketFunction
       Principal: apigateway.amazonaws.com
 Outputs:
   ConnectionsTableArn:
