@@ -14,10 +14,7 @@ table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
 def handler(event, context):
-    key = "".join(
-        secrets.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase)
-        for _ in range(64)
-    )
+    key = secrets.token_urlsafe(64)
     table.put_item(Item={"key": key})
     return {
         "isBase64Encoded": False,
