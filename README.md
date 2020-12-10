@@ -24,6 +24,8 @@ sam deploy --guided
 
 ### WebSocket event stream
 
+*Note:* You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([hello](https://github.com/timTam97/compcontrol-client-hs)) and want to send commands to your computer, see the REST API section below.
+
 You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.live/getkey to get your key.
 
 After you have your key, you can now connect to the WebSocket as well as send commands. The URI for connecting to the websocket is `wss://wss.timsam.live/`. Pass your authentication token in the header with key `auth`.
