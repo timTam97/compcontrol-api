@@ -39,7 +39,7 @@ All messages sent are JSON objects with a `type` key, with an optional `subtype`
 
 ### REST API for sending commands
 
-The URL to send commands to is `https://command.timsam.live/send/<command>`. Replace &lt;command> with the command you want to send to the client. Place your auth token in the `auth` part of the header.
+The URL to send commands to is `https://command.timsam.live/send/<command>`. Replace `<command>` with the command you want to send to the client. Place your auth token in the `auth` part of the header.
 
 For example, if you wanted to send a sleep command:
 
