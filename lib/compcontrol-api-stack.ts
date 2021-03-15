@@ -1,10 +1,26 @@
-import * as cdk from '@aws-cdk/core';
-
+import * as cdk from "@aws-cdk/core";
+import * as apigateway from "@aws-cdk/aws-apigateway";
+import * as lambda from "@aws-cdk/aws-lambda";
+import CompControlTables from "./dynamo-tables";
+import CompControlFunctions from "./lambda-functions";
 
 export class CompcontrolApiStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    constructor(app: cdk.App, id: string) {
+        super(app, id);
+        const tables = CompControlTables(this);
+        const connectionsTable = tables.connectionsTable;
+        const keyTable = tables.keyTable;
 
-    // The code that defines your stack goes here
-  }
+        const functions = CompControlFunctions(
+            this,
+            connectionsTable.tableName,
+            keyTable.tableName
+        );
+        connectionsTable.grantReadData(functions.websocketAuthorizer);
+        keyTable.grantReadWriteData(functions.generateKeyFunction);
+    }
 }
+
+const app = new cdk.App();
+new CompcontrolApiStack(app, "CompControlAPI");
+app.synth();
