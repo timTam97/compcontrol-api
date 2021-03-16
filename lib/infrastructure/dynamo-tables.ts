@@ -8,17 +8,21 @@ export default function CompControlTables(stack: cdk.Stack) {
         "CompControlConnectionsTable",
         {
             partitionKey: {
-                name: "connectionID",
+                name: "connectionId",
                 type: dynamodb.AttributeType.STRING,
+            },
+            sortKey: {
+                name: "associatedKey",
+                type: dynamodb.AttributeType.STRING
             },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             removalPolicy: defaultRemovalPolicy,
         }
     );
     connectionsTable.addGlobalSecondaryIndex({
-        indexName: "AssociatedApiKeyIndex",
+        indexName: "keyIndex",
         partitionKey: {
-            name: "associatedApiKey",
+            name: "associatedKey",
             type: dynamodb.AttributeType.STRING,
         },
         projectionType: dynamodb.ProjectionType.ALL,
@@ -26,7 +30,7 @@ export default function CompControlTables(stack: cdk.Stack) {
 
     const keyTable = new dynamodb.Table(stack, "CompControlApiKeyTable", {
         partitionKey: {
-            name: "apiKey",
+            name: "key",
             type: dynamodb.AttributeType.STRING,
         },
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
