@@ -11,10 +11,6 @@ export default function CompControlTables(stack: cdk.Stack) {
                 name: "connectionId",
                 type: dynamodb.AttributeType.STRING,
             },
-            sortKey: {
-                name: "associatedKey",
-                type: dynamodb.AttributeType.STRING
-            },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             removalPolicy: defaultRemovalPolicy,
         }

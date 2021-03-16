@@ -1,11 +1,13 @@
 import * as cdk from "@aws-cdk/core";
 import * as lambda from "@aws-cdk/aws-lambda";
+import * as iam from "@aws-cdk/aws-iam";
 
 export default function CompControlFunctions(
     stack: cdk.Stack,
     connectionsTableName: string,
     keyTableName: string,
-    ApiGwConnectionBaseURL: string
+    ApiGwConnectionBaseURL: string,
+    wssApiRef: string
 ) {
     const websocketAuthorizer = new lambda.Function(
         stack,
@@ -15,7 +17,7 @@ export default function CompControlFunctions(
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
-                TABLE_NAME: connectionsTableName,
+                TABLE_NAME: keyTableName,
             },
         }
     );
@@ -71,7 +73,15 @@ export default function CompControlFunctions(
             },
         }
     );
-
+    sendCommandFunction.addToRolePolicy(
+        new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ["execute-api:ManageConnections"],
+            resources: [
+                `arn:aws:execute-api:${stack.region}:${stack.account}:${wssApiRef}/*`,
+            ],
+        })
+    );
     const sendPingFunction = new lambda.Function(stack, "SendPingFunction", {
         code: new lambda.AssetCode("lib/src/sendping"),
         handler: "app.handler",

@@ -18,14 +18,6 @@ export class CompControlApiStack extends cdk.Stack {
         const api = new apigw.HttpApi(this, "CompControlHttpApi");
 
         // Lambda stuff
-        const functions = CompControlFunctions(
-            this,
-            connectionsTable.tableName,
-            keyTable.tableName,
-            api.apiEndpoint
-        );
-        connectionsTable.grantReadData(functions.websocketAuthorizer);
-        keyTable.grantReadWriteData(functions.generateKeyFunction);
 
         // API stuff continued
         // Websocket API
@@ -36,6 +28,26 @@ export class CompControlApiStack extends cdk.Stack {
             routeSelectionExpression: "$request.body.action",
             name: "CompControlWebsocketApi",
         });
+
+        // Lambda stuff
+        const functions = CompControlFunctions(
+            this,
+            connectionsTable.tableName,
+            keyTable.tableName,
+            `https://${wssApi.ref}.execute-api.${this.region}.amazonaws.com/prod`,
+            wssApi.ref
+        );
+
+        connectionsTable.grantReadData(functions.sendPingFunction);
+        connectionsTable.grantReadData(functions.sendCommandFunction);
+
+        connectionsTable.grantReadWriteData(functions.onConnectFunction);
+        connectionsTable.grantReadWriteData(functions.onDisconnectFunction);
+
+        keyTable.grantReadData(functions.websocketAuthorizer);
+        keyTable.grantReadData(functions.sendCommandFunction);
+        keyTable.grantReadWriteData(functions.generateKeyFunction);
+
         const wssAuth = new apigw.CfnAuthorizer(
             this,
             "CompControlWebsocketAuth",
@@ -47,6 +59,11 @@ export class CompControlApiStack extends cdk.Stack {
                 authorizerUri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${functions.websocketAuthorizer.functionArn}/invocations`,
             }
         );
+        new lambda.CfnPermission(this, "AuthorizerPermission", {
+            action: "lambda:InvokeFunction",
+            functionName: functions.websocketAuthorizer.functionName,
+            principal: "apigateway.amazonaws.com",
+        }).addDependsOn(wssApi);
 
         // onConnect stuff
         const wssConnectIntegration = new apigw.CfnIntegration(
@@ -55,7 +72,7 @@ export class CompControlApiStack extends cdk.Stack {
             {
                 apiId: wssApi.ref,
                 integrationType: "AWS_PROXY",
-                integrationUri: functions.onConnectFunction.functionArn,
+                integrationUri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${functions.onConnectFunction.functionArn}/invocations`,
             }
         );
         new apigw.CfnRoute(this, "OnConnectRoute", {
@@ -65,6 +82,11 @@ export class CompControlApiStack extends cdk.Stack {
             authorizerId: wssAuth.ref,
             target: "integrations/" + wssConnectIntegration.ref,
         });
+        new lambda.CfnPermission(this, "OnConnectPermission", {
+            action: "lambda:InvokeFunction",
+            functionName: functions.onConnectFunction.functionName,
+            principal: "apigateway.amazonaws.com",
+        }).addDependsOn(wssApi);
 
         // onDisconnect stuff
         const wssDisconnectIntegration = new apigw.CfnIntegration(
@@ -73,14 +95,19 @@ export class CompControlApiStack extends cdk.Stack {
             {
                 apiId: wssApi.ref,
                 integrationType: "AWS_PROXY",
-                integrationUri: functions.onDisconnectFunction.functionArn,
+                integrationUri: `arn:aws:apigateway:${this.region}:lambda:path/2015-03-31/functions/${functions.onDisconnectFunction.functionArn}/invocations`,
             }
         );
         new apigw.CfnRoute(this, "OnDisconnectRoute", {
             apiId: wssApi.ref,
             routeKey: "$disconnect",
             target: "integrations/" + wssDisconnectIntegration.ref,
-        });
+        }).addDependsOn(wssApi);
+        new lambda.CfnPermission(this, "OnDisconnectPermission", {
+            action: "lambda:InvokeFunction",
+            functionName: functions.onDisconnectFunction.functionName,
+            principal: "apigateway.amazonaws.com",
+        }).addDependsOn(wssApi);
 
         // Set up autodeploy
         new apigw.CfnStage(this, "CompControlWebsocketStage", {
