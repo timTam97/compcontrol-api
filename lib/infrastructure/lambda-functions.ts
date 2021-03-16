@@ -1,6 +1,8 @@
 import * as cdk from "@aws-cdk/core";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as iam from "@aws-cdk/aws-iam";
+import * as events from "@aws-cdk/aws-events";
+import * as targets from "@aws-cdk/aws-events-targets";
 
 export default function CompControlFunctions(
     stack: cdk.Stack,
@@ -91,6 +93,19 @@ export default function CompControlFunctions(
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
     });
+    sendPingFunction.addToRolePolicy(
+        new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ["execute-api:ManageConnections"],
+            resources: [
+                `arn:aws:execute-api:${stack.region}:${stack.account}:${wssApiRef}/*`,
+            ],
+        })
+    );
+    const scheduledPing = new events.Rule(stack, "ScheduledPing", {
+        schedule: events.Schedule.rate(cdk.Duration.minutes(1)),
+        targets: [new targets.LambdaFunction(sendPingFunction)],
+    });
 
     return {
         websocketAuthorizer,
@@ -99,5 +114,6 @@ export default function CompControlFunctions(
         onDisconnectFunction,
         sendCommandFunction,
         sendPingFunction,
+        scheduledPing,
     };
 }
