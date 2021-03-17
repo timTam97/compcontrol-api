@@ -4,6 +4,16 @@ import * as iam from "@aws-cdk/aws-iam";
 import * as events from "@aws-cdk/aws-events";
 import * as targets from "@aws-cdk/aws-events-targets";
 
+export interface lambdaFunctions {
+    websocketAuthorizer: lambda.Function;
+    generateKeyFunction: lambda.Function;
+    onConnectFunction: lambda.Function;
+    onDisconnectFunction: lambda.Function;
+    sendCommandFunction: lambda.Function;
+    sendPingFunction: lambda.Function;
+    scheduledPing: events.Rule;
+}
+
 export default function CompControlFunctions(
     stack: cdk.Stack,
     connectionsTableName: string,
