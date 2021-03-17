@@ -12,19 +12,19 @@ This API is live at `https://*.timsam.live`. See the API reference below for det
 
 ## Setup
 
-The easiest way to deploy this serverless stack is to deploy it straight from its [listing](https://serverlessrepo.aws.amazon.com/applications/ap-southeast-2/670960088768/compcontrol-api) on the AWS Serverless Application Repository.
+As mentioned above, this API is already deployed at `https://*.timsam.live`.
 
-Alternatively, you can clone this repo and use the SAM CLI to build and deploy the stack yourself:
-
-```
-sam deploy --guided
-```
+If you want to build and deploy it yourself, then:
+- Clone this repo
+- Install the AWS CDK (`npm install -g aws-cdk`) if you haven't already
+- `npm install`
+- `cdk deploy` (ensure your credentials at `~/.aws` are set)
 
 ## Usage / API Reference
 
 ### WebSocket event stream
 
-*Note:* You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([hello](https://github.com/timTam97/compcontrol-client-hs)) and want to send commands to your computer, see the REST API section below.
+*Note:* You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([over here](https://github.com/timTam97/compcontrol-client-hs)) and want to send commands to your computer, see the REST API section below.
 
 You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.live/getkey to get your key.
 
