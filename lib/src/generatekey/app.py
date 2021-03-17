@@ -14,6 +14,7 @@ table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
 def handler(event, context):
+    print(event)
     key = secrets.token_urlsafe(64)
     table.put_item(Item={"key": key})
     return {

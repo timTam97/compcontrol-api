@@ -12,6 +12,7 @@ key_table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
 def handler(event, context):
+    print(event)
     method = event["methodArn"]
     auth_token = event["headers"].get("auth")
     if auth_token is None:

@@ -15,6 +15,7 @@ apigw = boto3.client(
 
 
 def handler(event, context):
+    print(event)
     res = table.scan(Select="ALL_ATTRIBUTES")
     connIDs = [dict["connectionId"] for dict in res["Items"]]
     for val in connIDs:  # Send to all connections
