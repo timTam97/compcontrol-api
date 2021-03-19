@@ -8,7 +8,7 @@ This API is live at `https://*.timsam.live`. See the API reference below for det
 
 ## Client Apps
 
-[compcontrol-client-hs](https://github.com/timTam97/compcontrol-client-hs) is a client app that interfaces with this API. If you get yourself an API key and run this client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
+[compcontrol-client](https://github.com/timTam97/compcontrol-client) is a client app that interfaces with this API. If you get yourself an API key and run this client app on your local machine, you will be able to make web requests and control your computer (ie. sleep, shut down, hibernate, lock) accordingly.
 
 ## Setup
 
@@ -24,7 +24,7 @@ If you want to build and deploy it yourself, then:
 
 ### WebSocket event stream
 
-*Note:* You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([over here](https://github.com/timTam97/compcontrol-client-hs)) and want to send commands to your computer, see the REST API section below.
+*Note:* You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([over here](https://github.com/timTam97/compcontrol-client)) and want to send commands to your computer, see the REST API section below.
 
 You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.live/getkey to get your key.
 
