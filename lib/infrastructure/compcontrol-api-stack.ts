@@ -1,14 +1,17 @@
 import * as cdk from "@aws-cdk/core";
 import * as apigw from "@aws-cdk/aws-apigatewayv2";
 import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as lambda from "@aws-cdk/aws-lambda";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
+import ReactOnS3 from "./react-s3"
+
 
 export class CompControlApiStack extends cdk.Stack {
     constructor(app: cdk.App, id: string) {
         super(app, id);
+        
+        ReactOnS3(this);
 
         // DynamoDB stuff
         const tables = CompControlTables(this);
