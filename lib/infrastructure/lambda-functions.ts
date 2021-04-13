@@ -20,7 +20,7 @@ export default function CompControlFunctions(
     keyTableName: string,
     ApiGwConnectionBaseURL: string,
     wssApiRef: string
-) {
+): lambdaFunctions {
     const websocketAuthorizer = new lambda.Function(
         stack,
         "WebsocketAuthorizer",
