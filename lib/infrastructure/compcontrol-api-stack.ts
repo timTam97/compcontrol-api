@@ -1,17 +1,24 @@
 import * as cdk from "@aws-cdk/core";
 import * as apigw from "@aws-cdk/aws-apigatewayv2";
 import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations";
+import * as acm from "@aws-cdk/aws-certificatemanager";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
-import ReactOnS3 from "./react-s3"
+import ReactOnS3 from "./react-s3";
 
+export class WebsiteStack extends cdk.Stack {
+    public readonly certificate: acm.Certificate;
+    constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
+        super(app, id, props);
+
+        ReactOnS3(this);
+    }
+}
 
 export class CompControlApiStack extends cdk.Stack {
-    constructor(app: cdk.App, id: string) {
-        super(app, id);
-        
-        ReactOnS3(this);
+    constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
+        super(app, id, props);
 
         // DynamoDB stuff
         const tables = CompControlTables(this);
@@ -73,5 +80,10 @@ export class CompControlApiStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new CompControlApiStack(app, "CompControlAPI");
+new WebsiteStack(app, "WebsiteStack", {
+    env: { region: "us-east-1" },
+});
+new CompControlApiStack(app, "CompControlAPI", {
+    env: { region: "ap-southeast-2" },
+});
 app.synth();
