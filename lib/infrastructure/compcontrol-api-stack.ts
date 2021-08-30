@@ -11,7 +11,6 @@ export class WebsiteStack extends cdk.Stack {
     public readonly certificate: acm.Certificate;
     constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
         super(app, id, props);
-
         ReactOnS3(this);
     }
 }
@@ -34,6 +33,8 @@ export class CompControlApiStack extends cdk.Stack {
                 validation: acm.CertificateValidation.fromDns(),
             }
         );
+        cdk.Tags.of(customDomainCert).add("Name", "CompControlApiCertificate");
+
         // The other custom domain is in websocket-support.ts
         // as it needs to be a CfnDomain :(
         const commandDomain = new apigw.DomainName(
@@ -69,7 +70,7 @@ export class CompControlApiStack extends cdk.Stack {
             this,
             connectionsTable.tableName,
             keyTable.tableName,
-            `https://${wssApi.ref}.execute-api.${this.region}.amazonaws.com/prod`,
+            "https://wss.timsam.live",
             wssApi.ref
         );
 
