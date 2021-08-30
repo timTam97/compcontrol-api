@@ -26,7 +26,31 @@ export class CompControlApiStack extends cdk.Stack {
         const keyTable = tables.keyTable;
 
         // HTTP API stuff
-        const api = new apigw.HttpApi(this, "CompControlHttpApi");
+        const customDomainCert = new acm.Certificate(
+            this,
+            "CompControlApiDomainCert",
+            {
+                domainName: "*.timsam.live",
+                validation: acm.CertificateValidation.fromDns(),
+            }
+        );
+        // The other custom domain is in websocket-support.ts
+        // as it needs to be a CfnDomain :(
+        const commandDomain = new apigw.DomainName(
+            this,
+            "CompControlCommandDomain",
+            {
+                domainName: "command.timsam.live",
+                certificate: customDomainCert,
+            }
+        );
+
+        const api = new apigw.HttpApi(this, "CompControlHttpApi", {
+            defaultDomainMapping: {
+                domainName: commandDomain,
+            },
+            disableExecuteApiEndpoint: true,
+        });
 
         /**
          * Create base websocket API
@@ -37,6 +61,7 @@ export class CompControlApiStack extends cdk.Stack {
             protocolType: "WEBSOCKET",
             routeSelectionExpression: "$request.body.action",
             name: "CompControlWebsocketApi",
+            disableExecuteApiEndpoint: true,
         });
 
         // Lambda stuff
@@ -57,7 +82,7 @@ export class CompControlApiStack extends cdk.Stack {
         keyTable.grantReadWriteData(functions.generateKeyFunction);
 
         // Websocket API setup
-        CompControlWebsocket(this, wssApi, functions);
+        CompControlWebsocket(this, wssApi, functions, customDomainCert);
 
         // Adding Lambda integrations for HTTP API
         api.addRoutes({
@@ -83,7 +108,7 @@ const app = new cdk.App();
 new WebsiteStack(app, "WebsiteStack", {
     env: { region: "us-east-1" },
 });
-new CompControlApiStack(app, "CompControlAPI", {
+new CompControlApiStack(app, "CompControlApiStack", {
     env: { region: "ap-southeast-2" },
 });
 app.synth();

@@ -10,6 +10,6 @@ const app = new cdk.App();
 new WebsiteStack(app, "WebsiteStack", {
     env: { region: "us-east-1" },
 });
-new CompControlApiStack(app, "CompControlAPI", {
+new CompControlApiStack(app, "CompControlApiStack", {
     env: { region: "ap-southeast-2" },
 });

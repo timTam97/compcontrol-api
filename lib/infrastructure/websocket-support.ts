@@ -1,13 +1,14 @@
 import * as cdk from "@aws-cdk/core";
 import * as apigw from "@aws-cdk/aws-apigatewayv2";
-import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as lambda from "@aws-cdk/aws-lambda";
 import { lambdaFunctions } from "./lambda-functions";
+import { Certificate } from "@aws-cdk/aws-certificatemanager";
 
 export default function CompControlWebsocket(
     stack: cdk.Stack,
     wssApi: apigw.CfnApi,
-    functions: lambdaFunctions
+    functions: lambdaFunctions,
+    cert: Certificate
 ) {
     const wssAuth = new apigw.CfnAuthorizer(stack, "CompControlWebsocketAuth", {
         apiId: wssApi.ref,
@@ -77,6 +78,29 @@ export default function CompControlWebsocket(
         apiId: wssApi.ref,
     });
 
+    // Custom domain name stuff
+    const apiDomainName = new apigw.CfnDomainName(
+        stack,
+        "CompControlWebsocketDomain",
+        {
+            domainName: "wss.timsam.live",
+            domainNameConfigurations: [
+                {
+                    certificateArn: cert.certificateArn,
+                },
+            ],
+        }
+    );
+    const apiMapping = new apigw.CfnApiMapping(
+        stack,
+        "CompControlWebsocketApiMapping",
+        {
+            apiId: wssApi.ref,
+            domainName: "wss.timsam.live",
+            stage: apiStage.ref,
+        }
+    ).addDependsOn(apiDomainName);
+
     return {
         wssAuth,
         authPerm,
@@ -87,5 +111,6 @@ export default function CompControlWebsocket(
         disconnectRoute,
         disconnectPerm,
         apiStage,
+        apiMapping,
     };
 }
