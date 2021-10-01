@@ -31,6 +31,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: keyTableName,
             },
+            architectures: [lambda.Architecture.ARM_64],
         }
     );
 
@@ -44,6 +45,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: keyTableName,
             },
+            architectures: [lambda.Architecture.ARM_64],
         }
     );
 
@@ -54,6 +56,7 @@ export default function CompControlFunctions(
         environment: {
             TABLE_NAME: connectionsTableName,
         },
+        architectures: [lambda.Architecture.ARM_64],
     });
 
     const onDisconnectFunction = new lambda.Function(
@@ -66,6 +69,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: connectionsTableName,
             },
+            architectures: [lambda.Architecture.ARM_64],
         }
     );
 
@@ -83,6 +87,7 @@ export default function CompControlFunctions(
                 ALLOWED_COMMANDS:
                     '{"command1": "sleep", "command2": "hibernate", "command3": "shutdown","command4": "lock"}',
             },
+            architectures: [lambda.Architecture.ARM_64],
         }
     );
     sendCommandFunction.addToRolePolicy(
@@ -102,6 +107,7 @@ export default function CompControlFunctions(
             TABLE_NAME: connectionsTableName,
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
+        architectures: [lambda.Architecture.ARM_64],
     });
     sendPingFunction.addToRolePolicy(
         new iam.PolicyStatement({
