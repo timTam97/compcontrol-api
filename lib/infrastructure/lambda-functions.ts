@@ -26,8 +26,8 @@ export default function CompControlFunctions(
         "WebsocketAuthorizer",
         {
             code: new lambda.AssetCode("lib/src/authwebsocket"),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            handler: "out/app.handler",
+            runtime: lambda.Runtime.NODEJS_14_X,
             environment: {
                 TABLE_NAME: keyTableName,
             },
