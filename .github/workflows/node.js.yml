@@ -25,5 +25,10 @@ jobs:
     - run: npm ci
     - run: npm i -g aws-cdk
     - run: mkdir cdk.out
+    - name: Build React site
+      working-directory: ./lib/src/react-static/
+      run: |
+          npm ci
+          npm run build
     - run: cdk synth CompControlApiStack
     - run: cdk synth WebsiteStack
