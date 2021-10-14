@@ -88,6 +88,7 @@ export default function CompControlFunctions(
                     '{"command1": "sleep", "command2": "hibernate", "command3": "shutdown","command4": "lock"}',
             },
             architectures: [lambda.Architecture.ARM_64],
+            memorySize: 512,
         }
     );
     sendCommandFunction.addToRolePolicy(
@@ -108,6 +109,7 @@ export default function CompControlFunctions(
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
         architectures: [lambda.Architecture.ARM_64],
+        memorySize: 256,
     });
     sendPingFunction.addToRolePolicy(
         new iam.PolicyStatement({
