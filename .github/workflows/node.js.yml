@@ -26,4 +26,3 @@ jobs:
     - run: npm i -g aws-cdk
     - run: mkdir cdk.out
     - run: cdk synth CompControlApiStack
-    - run: cdk synth WebsiteStack
