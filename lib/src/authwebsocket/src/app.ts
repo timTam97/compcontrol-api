@@ -21,7 +21,10 @@ export const handler = async (
     const token = event.headers.auth;
     const queryCommand = new QueryCommand({
         TableName: process.env.TABLE_NAME,
-        KeyConditionExpression: "key = :s",
+        KeyConditionExpression: "#key = :s",
+        ExpressionAttributeNames: {
+            "#key": "key",
+        },
         ExpressionAttributeValues: {
             ":s": { S: token },
         },
