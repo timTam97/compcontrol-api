@@ -32,6 +32,7 @@ export default function CompControlFunctions(
                 TABLE_NAME: keyTableName,
             },
             architectures: [lambda.Architecture.ARM_64],
+            memorySize: 512,
         }
     );
 
@@ -46,6 +47,7 @@ export default function CompControlFunctions(
                 TABLE_NAME: keyTableName,
             },
             architectures: [lambda.Architecture.ARM_64],
+            memorySize: 256,
         }
     );
 
@@ -57,6 +59,7 @@ export default function CompControlFunctions(
             TABLE_NAME: connectionsTableName,
         },
         architectures: [lambda.Architecture.ARM_64],
+        memorySize: 256,
     });
 
     const onDisconnectFunction = new lambda.Function(
@@ -70,6 +73,7 @@ export default function CompControlFunctions(
                 TABLE_NAME: connectionsTableName,
             },
             architectures: [lambda.Architecture.ARM_64],
+            memorySize: 256,
         }
     );
 
