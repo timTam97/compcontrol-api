@@ -5,15 +5,6 @@ import * as acm from "@aws-cdk/aws-certificatemanager";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
-import ReactOnS3 from "./react-s3";
-
-export class WebsiteStack extends cdk.Stack {
-    public readonly certificate: acm.Certificate;
-    constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
-        super(app, id, props);
-        ReactOnS3(this);
-    }
-}
 
 export class CompControlApiStack extends cdk.Stack {
     constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
@@ -106,9 +97,6 @@ export class CompControlApiStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new WebsiteStack(app, "WebsiteStack", {
-    env: { region: "us-east-1" },
-});
 new CompControlApiStack(app, "CompControlApiStack", {
     env: { region: "ap-southeast-2" },
 });
