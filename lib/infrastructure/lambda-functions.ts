@@ -31,7 +31,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: keyTableName,
             },
-            architectures: [lambda.Architecture.ARM_64],
+            architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
         }
     );
@@ -46,7 +46,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: keyTableName,
             },
-            architectures: [lambda.Architecture.ARM_64],
+            architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
         }
     );
@@ -58,7 +58,7 @@ export default function CompControlFunctions(
         environment: {
             TABLE_NAME: connectionsTableName,
         },
-        architectures: [lambda.Architecture.ARM_64],
+        architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
     });
 
@@ -72,7 +72,7 @@ export default function CompControlFunctions(
             environment: {
                 TABLE_NAME: connectionsTableName,
             },
-            architectures: [lambda.Architecture.ARM_64],
+            architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
         }
     );
@@ -91,7 +91,7 @@ export default function CompControlFunctions(
                 ALLOWED_COMMANDS:
                     '{"command1": "sleep", "command2": "hibernate", "command3": "shutdown","command4": "lock"}',
             },
-            architectures: [lambda.Architecture.ARM_64],
+            architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
         }
     );
@@ -112,7 +112,7 @@ export default function CompControlFunctions(
             TABLE_NAME: connectionsTableName,
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
-        architectures: [lambda.Architecture.ARM_64],
+        architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
     });
     sendPingFunction.addToRolePolicy(

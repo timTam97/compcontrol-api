@@ -11,26 +11,26 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "^1.125.0",
+    "@aws-cdk/assert": "^1.128.0",
     "@types/jest": "^26.0.24",
-    "@types/node": "^16.10.2",
-    "aws-cdk": "^1.125.0",
+    "@types/node": "^16.11.0",
+    "aws-cdk": "^1.128.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.5.6",
     "ts-node": "^9.0.0",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.4"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigatewayv2": "^1.125.0",
-    "@aws-cdk/aws-apigatewayv2-integrations": "^1.125.0",
-    "@aws-cdk/aws-certificatemanager": "^1.125.0",
-    "@aws-cdk/aws-dynamodb": "^1.125.0",
-    "@aws-cdk/aws-events": "^1.125.0",
-    "@aws-cdk/aws-events-targets": "^1.125.0",
-    "@aws-cdk/aws-iam": "^1.125.0",
-    "@aws-cdk/aws-lambda": "^1.125.0",
-    "@aws-cdk/aws-s3-deployment": "^1.125.0",
-    "@aws-cdk/core": "^1.125.0",
+    "@aws-cdk/aws-apigatewayv2": "^1.128.0",
+    "@aws-cdk/aws-apigatewayv2-integrations": "^1.128.0",
+    "@aws-cdk/aws-certificatemanager": "^1.128.0",
+    "@aws-cdk/aws-dynamodb": "^1.128.0",
+    "@aws-cdk/aws-events": "^1.128.0",
+    "@aws-cdk/aws-events-targets": "^1.128.0",
+    "@aws-cdk/aws-iam": "^1.128.0",
+    "@aws-cdk/aws-lambda": "^1.128.0",
+    "@aws-cdk/aws-s3-deployment": "^1.128.0",
+    "@aws-cdk/core": "^1.128.0",
     "source-map-support": "^0.5.20"
   }
 }
