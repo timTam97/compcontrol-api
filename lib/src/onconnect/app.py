@@ -19,4 +19,4 @@ def handler(event, context):
             "associatedKey": key,
         }
     )
-    return {"isBase64Encoded": False, "statusCode": 200, "body": "yes"}
+    return {"statusCode": 200}

@@ -21,8 +21,4 @@ def handler(event, context):
     for val in connIDs:  # Send to all connections
         payload = json.dumps({"type": "nop", "subtype": "ping"})
         apigw.post_to_connection(Data=payload, ConnectionId=val)
-    return {
-        "isBase64Encoded": False,
-        "statusCode": 200,
-        "body": json.dumps({"message": "Success"}),
-    }
+    return {"statusCode": 200}

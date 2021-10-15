@@ -51,7 +51,6 @@ def handler(event, context):
 
 def response(code, message):
     return {
-        "isBase64Encoded": False,
         "statusCode": code,
         "body": json.dumps({"message": message}),
     }

@@ -6,7 +6,6 @@ Invoked on a GET request to our API.
 import json
 import os
 import secrets
-import string
 
 import boto3
 
@@ -18,7 +17,6 @@ def handler(event, context):
     key = secrets.token_urlsafe(64)
     table.put_item(Item={"key": key})
     return {
-        "isBase64Encoded": False,
         "statusCode": 200,
         "body": json.dumps({"key": key}),
     }
