@@ -13,6 +13,7 @@ export default function CompControlTables(stack: cdk.Stack) {
             },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             removalPolicy: defaultRemovalPolicy,
+            stream: dynamodb.StreamViewType.KEYS_ONLY,
         }
     );
     connectionsTable.addGlobalSecondaryIndex({

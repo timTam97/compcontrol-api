@@ -3,6 +3,8 @@ import * as lambda from "@aws-cdk/aws-lambda";
 import * as iam from "@aws-cdk/aws-iam";
 import * as events from "@aws-cdk/aws-events";
 import * as targets from "@aws-cdk/aws-events-targets";
+import * as sources from "@aws-cdk/aws-lambda-event-sources";
+import * as dynamodb from "@aws-cdk/aws-dynamodb";
 
 export interface lambdaFunctions {
     websocketAuthorizer: lambda.Function;
@@ -13,11 +15,12 @@ export interface lambdaFunctions {
     sendPingFunction: lambda.Function;
     scheduledPing: events.Rule;
     sendCommandWarmer: events.Rule;
+    toggleRulesFunction: lambda.Function;
 }
 
 export default function CompControlFunctions(
     stack: cdk.Stack,
-    connectionsTableName: string,
+    connectionsTable: dynamodb.Table,
     keyTableName: string,
     ApiGwConnectionBaseURL: string,
     wssApiRef: string
@@ -57,7 +60,7 @@ export default function CompControlFunctions(
         handler: "app.handler",
         runtime: lambda.Runtime.PYTHON_3_8,
         environment: {
-            TABLE_NAME: connectionsTableName,
+            TABLE_NAME: connectionsTable.tableName,
         },
         architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
@@ -71,7 +74,7 @@ export default function CompControlFunctions(
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
-                TABLE_NAME: connectionsTableName,
+                TABLE_NAME: connectionsTable.tableName,
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
@@ -86,7 +89,7 @@ export default function CompControlFunctions(
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
-                TABLE_NAME: connectionsTableName,
+                TABLE_NAME: connectionsTable.tableName,
                 KEY_TABLE_NAME: keyTableName,
                 CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
                 ALLOWED_COMMANDS:
@@ -105,12 +108,17 @@ export default function CompControlFunctions(
             ],
         })
     );
+    const sendCommandWarmer = new events.Rule(stack, "SendCommandWarmer", {
+        schedule: events.Schedule.rate(cdk.Duration.minutes(3)),
+        targets: [new targets.LambdaFunction(sendCommandFunction)],
+    });
+
     const sendPingFunction = new lambda.Function(stack, "SendPingFunction", {
         code: new lambda.AssetCode("lib/src/sendping"),
         handler: "app.handler",
         runtime: lambda.Runtime.PYTHON_3_8,
         environment: {
-            TABLE_NAME: connectionsTableName,
+            TABLE_NAME: connectionsTable.tableName,
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
         architecture: lambda.Architecture.ARM_64,
@@ -130,10 +138,34 @@ export default function CompControlFunctions(
         targets: [new targets.LambdaFunction(sendPingFunction)],
     });
 
-    const sendCommandWarmer = new events.Rule(stack, "SendCommandWarmer", {
-        schedule: events.Schedule.rate(cdk.Duration.minutes(3)),
-        targets: [new targets.LambdaFunction(sendCommandFunction)],
-    });
+    const toggleRulesFunction = new lambda.Function(
+        stack,
+        "ToggleRuleFunction",
+        {
+            code: new lambda.AssetCode("lib/src/togglerules"),
+            handler: "app.handler",
+            runtime: lambda.Runtime.PYTHON_3_8,
+            environment: {
+                TABLE_NAME: connectionsTable.tableName,
+                WARMER_RULE_NAME: sendCommandWarmer.ruleName,
+                PING_RULE_NAME: scheduledPing.ruleName,
+            },
+            architecture: lambda.Architecture.ARM_64,
+            memorySize: 256,
+        }
+    );
+    toggleRulesFunction.addEventSource(
+        new sources.DynamoEventSource(connectionsTable, {
+            startingPosition: lambda.StartingPosition.LATEST,
+        })
+    );
+    toggleRulesFunction.addToRolePolicy(
+        new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ["events:DisableRule", "events:EnableRule"],
+            resources: [sendCommandWarmer.ruleArn, scheduledPing.ruleArn],
+        })
+    );
 
     return {
         websocketAuthorizer,
@@ -144,5 +176,6 @@ export default function CompControlFunctions(
         sendPingFunction,
         scheduledPing,
         sendCommandWarmer,
+        toggleRulesFunction,
     };
 }

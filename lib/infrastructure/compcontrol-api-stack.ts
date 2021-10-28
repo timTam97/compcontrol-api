@@ -59,7 +59,7 @@ export class CompControlApiStack extends cdk.Stack {
         // Lambda stuff
         const functions = CompControlFunctions(
             this,
-            connectionsTable.tableName,
+            connectionsTable,
             keyTable.tableName,
             "https://wss.timsam.live",
             wssApi.ref
@@ -67,6 +67,7 @@ export class CompControlApiStack extends cdk.Stack {
 
         connectionsTable.grantReadData(functions.sendPingFunction);
         connectionsTable.grantReadData(functions.sendCommandFunction);
+        connectionsTable.grantReadData(functions.toggleRulesFunction);
         connectionsTable.grantReadWriteData(functions.onConnectFunction);
         connectionsTable.grantReadWriteData(functions.onDisconnectFunction);
         keyTable.grantReadData(functions.websocketAuthorizer);
