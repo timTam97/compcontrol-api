@@ -12,6 +12,7 @@ export interface lambdaFunctions {
     sendCommandFunction: lambda.Function;
     sendPingFunction: lambda.Function;
     scheduledPing: events.Rule;
+    sendCommandWarmer: events.Rule;
 }
 
 export default function CompControlFunctions(
@@ -129,6 +130,11 @@ export default function CompControlFunctions(
         targets: [new targets.LambdaFunction(sendPingFunction)],
     });
 
+    const sendCommandWarmer = new events.Rule(stack, "SendCommandWarmer", {
+        schedule: events.Schedule.rate(cdk.Duration.minutes(3)),
+        targets: [new targets.LambdaFunction(sendCommandFunction)],
+    });
+
     return {
         websocketAuthorizer,
         generateKeyFunction,
@@ -137,5 +143,6 @@ export default function CompControlFunctions(
         sendCommandFunction,
         sendPingFunction,
         scheduledPing,
+        sendCommandWarmer,
     };
 }

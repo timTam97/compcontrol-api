@@ -21,6 +21,10 @@ apigw = boto3.client(
 
 def handler(event, context):
     print(event)
+
+    if event.get("source") == "aws.events":
+        return response(200, "OK")
+
     command = event["pathParameters"]["command"]
     auth_key = event["headers"].get("auth")
     allowed_commands = list(json.loads(os.environ.get("ALLOWED_COMMANDS")).values())
