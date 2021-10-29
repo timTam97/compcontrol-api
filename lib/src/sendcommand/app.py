@@ -9,7 +9,10 @@ import json
 import os
 
 import boto3
+from aws_xray_sdk.core import patch_all, xray_recorder
 from boto3.dynamodb.conditions import Key
+
+patch_all()
 
 wss_table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 key_table = boto3.resource("dynamodb").Table(os.environ.get("KEY_TABLE_NAME"))
@@ -19,6 +22,7 @@ apigw = boto3.client(
 )
 
 
+@xray_recorder.capture("handler")
 def handler(event, _):
     print(event)
 
