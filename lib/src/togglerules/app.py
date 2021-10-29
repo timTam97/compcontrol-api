@@ -5,23 +5,23 @@ table. Enables them when the table has items.
 import os
 
 import boto3
+from aws_xray_sdk.core import patch_all, xray_recorder
 
+patch_all()
 table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 events = boto3.client("events")
 
 
+@xray_recorder.capture("handler")
 def handler(event, _):
     print(event)
     table_count = table.scan(Select="COUNT")["Count"]
     if table_count == 0:
-        print("No items")
         events.disable_rule(Name=os.environ.get("WARMER_RULE_NAME"))
         events.disable_rule(Name=os.environ.get("PING_RULE_NAME"))
         return
     elif table_count == 1:
-        print("One item")
         events.enable_rule(Name=os.environ.get("WARMER_RULE_NAME"))
         events.enable_rule(Name=os.environ.get("PING_RULE_NAME"))
         return
-    print("More than one item. no action taken")
     return

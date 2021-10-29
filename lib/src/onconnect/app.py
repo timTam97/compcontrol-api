@@ -6,11 +6,14 @@ import json
 import os
 
 import boto3
+from aws_xray_sdk.core import patch_all, xray_recorder
 
+patch_all()
 table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 
 
-def handler(event, context):
+@xray_recorder.capture("handler")
+def handler(event, _):
     print(event)
     key = event["headers"]["auth"]
     table.put_item(

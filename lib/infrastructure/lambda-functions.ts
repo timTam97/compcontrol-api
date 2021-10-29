@@ -25,6 +25,11 @@ export default function CompControlFunctions(
     ApiGwConnectionBaseURL: string,
     wssApiRef: string
 ): lambdaFunctions {
+    /**
+     * Bundling knowledge is from
+     * https://stackoverflow.com/a/69276116/13161283
+     */
+
     const websocketAuthorizer = new lambda.Function(
         stack,
         "WebsocketAuthorizer",
@@ -37,6 +42,7 @@ export default function CompControlFunctions(
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
+            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
@@ -44,7 +50,16 @@ export default function CompControlFunctions(
         stack,
         "GenerateKeyFunction",
         {
-            code: new lambda.AssetCode("lib/src/generatekey"),
+            code: new lambda.AssetCode("lib/src/generatekey", {
+                bundling: {
+                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                    command: [
+                        "bash",
+                        "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -52,11 +67,21 @@ export default function CompControlFunctions(
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
+            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
     const onConnectFunction = new lambda.Function(stack, "OnConnectFunction", {
-        code: new lambda.AssetCode("lib/src/onconnect"),
+        code: new lambda.AssetCode("lib/src/onconnect", {
+            bundling: {
+                image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                command: [
+                    "bash",
+                    "-c",
+                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                ],
+            },
+        }),
         handler: "app.handler",
         runtime: lambda.Runtime.PYTHON_3_8,
         environment: {
@@ -64,13 +89,23 @@ export default function CompControlFunctions(
         },
         architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
+        tracing: lambda.Tracing.ACTIVE,
     });
 
     const onDisconnectFunction = new lambda.Function(
         stack,
         "OnDisconnectFunction",
         {
-            code: new lambda.AssetCode("lib/src/ondisconnect"),
+            code: new lambda.AssetCode("lib/src/ondisconnect", {
+                bundling: {
+                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                    command: [
+                        "bash",
+                        "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -78,6 +113,7 @@ export default function CompControlFunctions(
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
+            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
@@ -85,7 +121,16 @@ export default function CompControlFunctions(
         stack,
         "SendCommandFunction",
         {
-            code: new lambda.AssetCode("lib/src/sendcommand"),
+            code: new lambda.AssetCode("lib/src/sendcommand", {
+                bundling: {
+                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                    command: [
+                        "bash",
+                        "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -97,6 +142,7 @@ export default function CompControlFunctions(
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
+            tracing: lambda.Tracing.ACTIVE,
         }
     );
     sendCommandFunction.addToRolePolicy(
@@ -114,15 +160,25 @@ export default function CompControlFunctions(
     });
 
     const sendPingFunction = new lambda.Function(stack, "SendPingFunction", {
-        code: new lambda.AssetCode("lib/src/sendping"),
+        code: new lambda.AssetCode("lib/src/sendping", {
+            bundling: {
+                image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                command: [
+                    "bash",
+                    "-c",
+                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                ],
+            },
+        }),
         handler: "app.handler",
-        runtime: lambda.Runtime.PYTHON_3_8,
+        runtime: lambda.Runtime.PYTHON_3_9,
         environment: {
             TABLE_NAME: connectionsTable.tableName,
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
         architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
+        tracing: lambda.Tracing.ACTIVE,
     });
     sendPingFunction.addToRolePolicy(
         new iam.PolicyStatement({
@@ -142,7 +198,16 @@ export default function CompControlFunctions(
         stack,
         "ToggleRuleFunction",
         {
-            code: new lambda.AssetCode("lib/src/togglerules"),
+            code: new lambda.AssetCode("lib/src/togglerules", {
+                bundling: {
+                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+                    command: [
+                        "bash",
+                        "-c",
+                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -152,6 +217,7 @@ export default function CompControlFunctions(
             },
             architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
+            tracing: lambda.Tracing.ACTIVE,
         }
     );
     toggleRulesFunction.addEventSource(
