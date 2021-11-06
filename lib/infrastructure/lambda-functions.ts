@@ -30,6 +30,15 @@ export default function CompControlFunctions(
      * https://stackoverflow.com/a/69276116/13161283
      */
 
+    const defaultPythonBundling: cdk.BundlingOptions = {
+        image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+        command: [
+            "bash",
+            "-c",
+            "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
+        ],
+    };
+
     const websocketAuthorizer = new lambda.Function(
         stack,
         "WebsocketAuthorizer",
@@ -51,14 +60,7 @@ export default function CompControlFunctions(
         "GenerateKeyFunction",
         {
             code: new lambda.AssetCode("lib/src/generatekey", {
-                bundling: {
-                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                    command: [
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                    ],
-                },
+                bundling: defaultPythonBundling,
             }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_9,
@@ -73,14 +75,7 @@ export default function CompControlFunctions(
 
     const onConnectFunction = new lambda.Function(stack, "OnConnectFunction", {
         code: new lambda.AssetCode("lib/src/onconnect", {
-            bundling: {
-                image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                command: [
-                    "bash",
-                    "-c",
-                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                ],
-            },
+            bundling: defaultPythonBundling,
         }),
         handler: "app.handler",
         runtime: lambda.Runtime.PYTHON_3_9,
@@ -97,14 +92,7 @@ export default function CompControlFunctions(
         "OnDisconnectFunction",
         {
             code: new lambda.AssetCode("lib/src/ondisconnect", {
-                bundling: {
-                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                    command: [
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                    ],
-                },
+                bundling: defaultPythonBundling,
             }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_9,
@@ -122,14 +110,7 @@ export default function CompControlFunctions(
         "SendCommandFunction",
         {
             code: new lambda.AssetCode("lib/src/sendcommand", {
-                bundling: {
-                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                    command: [
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                    ],
-                },
+                bundling: defaultPythonBundling,
             }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_9,
@@ -161,14 +142,7 @@ export default function CompControlFunctions(
 
     const sendPingFunction = new lambda.Function(stack, "SendPingFunction", {
         code: new lambda.AssetCode("lib/src/sendping", {
-            bundling: {
-                image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                command: [
-                    "bash",
-                    "-c",
-                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                ],
-            },
+            bundling: defaultPythonBundling,
         }),
         handler: "app.handler",
         runtime: lambda.Runtime.PYTHON_3_9,
@@ -199,14 +173,7 @@ export default function CompControlFunctions(
         "ToggleRuleFunction",
         {
             code: new lambda.AssetCode("lib/src/togglerules", {
-                bundling: {
-                    image: lambda.Runtime.PYTHON_3_9.bundlingImage,
-                    command: [
-                        "bash",
-                        "-c",
-                        "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output",
-                    ],
-                },
+                bundling: defaultPythonBundling,
             }),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_9,
