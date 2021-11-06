@@ -61,7 +61,7 @@ export default function CompControlFunctions(
                 },
             }),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: keyTableName,
             },
@@ -83,7 +83,7 @@ export default function CompControlFunctions(
             },
         }),
         handler: "app.handler",
-        runtime: lambda.Runtime.PYTHON_3_8,
+        runtime: lambda.Runtime.PYTHON_3_9,
         environment: {
             TABLE_NAME: connectionsTable.tableName,
         },
@@ -107,7 +107,7 @@ export default function CompControlFunctions(
                 },
             }),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
             },
@@ -132,7 +132,7 @@ export default function CompControlFunctions(
                 },
             }),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
                 KEY_TABLE_NAME: keyTableName,
@@ -209,7 +209,7 @@ export default function CompControlFunctions(
                 },
             }),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
                 WARMER_RULE_NAME: sendCommandWarmer.ruleName,
