@@ -29,7 +29,6 @@ export default function CompControlFunctions(
      * Bundling knowledge is from
      * https://stackoverflow.com/a/69276116/13161283
      */
-
     const defaultPythonBundling: cdk.BundlingOptions = {
         image: lambda.Runtime.PYTHON_3_9.bundlingImage,
         command: [
@@ -43,9 +42,11 @@ export default function CompControlFunctions(
         stack,
         "WebsocketAuthorizer",
         {
-            code: new lambda.AssetCode("lib/src/authwebsocket"),
-            handler: "out/app.handler",
-            runtime: lambda.Runtime.NODEJS_14_X,
+            code: new lambda.AssetCode("lib/src/authwebsocket", {
+                bundling: defaultPythonBundling,
+            }),
+            handler: "app.handler",
+            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: keyTableName,
             },
