@@ -9,10 +9,10 @@ import json
 import os
 
 import boto3
-from aws_xray_sdk.core import patch_all, xray_recorder
+from aws_lambda_powertools import Tracer
 from boto3.dynamodb.conditions import Key
 
-patch_all()
+tracer = Tracer()
 
 wss_table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
 key_table = boto3.resource("dynamodb").Table(os.environ.get("KEY_TABLE_NAME"))
@@ -22,12 +22,15 @@ apigw = boto3.client(
 )
 
 
-@xray_recorder.capture("handler")
+@tracer.capture_lambda_handler
 def handler(event, _):
     print(event)
 
     if event.get("source") == "aws.events":
+        tracer.put_annotation(key="WarmerInvoke", value="TRUE")
         return response(200, "OK (Warmer path)")
+
+    tracer.put_annotation(key="WarmerInvoke", value="FALSE")
 
     command = event["pathParameters"]["command"]
     auth_key = event["headers"].get("auth")
