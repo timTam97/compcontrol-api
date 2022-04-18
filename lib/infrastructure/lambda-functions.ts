@@ -1,10 +1,10 @@
-import * as cdk from "@aws-cdk/core";
-import * as lambda from "@aws-cdk/aws-lambda";
-import * as iam from "@aws-cdk/aws-iam";
-import * as events from "@aws-cdk/aws-events";
-import * as targets from "@aws-cdk/aws-events-targets";
-import * as sources from "@aws-cdk/aws-lambda-event-sources";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
+import { Stack, BundlingOptions, Duration } from "aws-cdk-lib";
+import { aws_lambda as lambda } from "aws-cdk-lib";
+import { aws_iam as iam } from "aws-cdk-lib";
+import { aws_events as events } from "aws-cdk-lib";
+import { aws_events_targets as targets } from "aws-cdk-lib";
+import { aws_lambda_event_sources as sources } from "aws-cdk-lib";
+import { aws_dynamodb as dynamodb } from "aws-cdk-lib";
 
 export interface lambdaFunctions {
     websocketAuthorizer: lambda.Function;
@@ -19,7 +19,7 @@ export interface lambdaFunctions {
 }
 
 export default function CompControlFunctions(
-    stack: cdk.Stack,
+    stack: Stack,
     connectionsTable: dynamodb.Table,
     keyTableName: string,
     ApiGwConnectionBaseURL: string,
@@ -29,7 +29,7 @@ export default function CompControlFunctions(
      * Bundling knowledge is from
      * https://stackoverflow.com/a/69276116/13161283
      */
-    const defaultPythonBundling: cdk.BundlingOptions = {
+    const defaultPythonBundling: BundlingOptions = {
         image: lambda.Runtime.PYTHON_3_9.bundlingImage,
         command: [
             "bash",
@@ -137,7 +137,7 @@ export default function CompControlFunctions(
         })
     );
     const sendCommandWarmer = new events.Rule(stack, "SendCommandWarmer", {
-        schedule: events.Schedule.rate(cdk.Duration.minutes(3)),
+        schedule: events.Schedule.rate(Duration.minutes(3)),
         targets: [new targets.LambdaFunction(sendCommandFunction)],
     });
 
@@ -165,7 +165,7 @@ export default function CompControlFunctions(
         })
     );
     const scheduledPing = new events.Rule(stack, "ScheduledPing", {
-        schedule: events.Schedule.rate(cdk.Duration.minutes(1)),
+        schedule: events.Schedule.rate(Duration.minutes(1)),
         targets: [new targets.LambdaFunction(sendPingFunction)],
     });
 

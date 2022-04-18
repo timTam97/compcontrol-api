@@ -1,13 +1,14 @@
-import * as cdk from "@aws-cdk/core";
-import * as apigw from "@aws-cdk/aws-apigatewayv2";
-import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as acm from "@aws-cdk/aws-certificatemanager";
+import { Construct } from "constructs";
+import { App, Stack, StackProps, Tags, aws_apigatewayv2 } from "aws-cdk-lib";
+import * as apigw from "@aws-cdk/aws-apigatewayv2-alpha";
+import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import { aws_certificatemanager as acm } from "aws-cdk-lib";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
 
-export class CompControlApiStack extends cdk.Stack {
-    constructor(app: cdk.App, id: string, props?: cdk.StackProps) {
+export class CompControlApiStack extends Stack {
+    constructor(app: App, id: string, props?: StackProps) {
         super(app, id, props);
 
         // DynamoDB stuff
@@ -24,7 +25,7 @@ export class CompControlApiStack extends cdk.Stack {
                 validation: acm.CertificateValidation.fromDns(),
             }
         );
-        cdk.Tags.of(customDomainCert).add("Name", "CompControlApiCertificate");
+        Tags.of(customDomainCert).add("Name", "CompControlApiCertificate");
 
         // The other custom domain is in websocket-support.ts
         // as it needs to be a CfnDomain :(
@@ -49,12 +50,16 @@ export class CompControlApiStack extends cdk.Stack {
          * Need to do this here as we need the base URL of this API for one of the lambdas.
          * also i want L2 constructs (with authorizers!) :(
          */
-        const wssApi = new apigw.CfnApi(this, "CompControlWebsocketApi", {
-            protocolType: "WEBSOCKET",
-            routeSelectionExpression: "$request.body.action",
-            name: "CompControlWebsocketApi",
-            disableExecuteApiEndpoint: true,
-        });
+        const wssApi = new aws_apigatewayv2.CfnApi(
+            this,
+            "CompControlWebsocketApi",
+            {
+                protocolType: "WEBSOCKET",
+                routeSelectionExpression: "$request.body.action",
+                name: "CompControlWebsocketApi",
+                disableExecuteApiEndpoint: true,
+            }
+        );
 
         // Lambda stuff
         const functions = CompControlFunctions(
@@ -79,25 +84,25 @@ export class CompControlApiStack extends cdk.Stack {
 
         // Adding Lambda integrations for HTTP API
         api.addRoutes({
-            integration: new apigw_integrations.LambdaProxyIntegration({
-                handler: functions.sendCommandFunction,
-                payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
-            }),
+            integration: new apigw_integrations.HttpLambdaIntegration(
+                "SendIntegration",
+                functions.sendCommandFunction
+            ),
             path: "/send/{command}",
             methods: [apigw.HttpMethod.POST],
         });
         api.addRoutes({
-            integration: new apigw_integrations.LambdaProxyIntegration({
-                handler: functions.generateKeyFunction,
-                payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
-            }),
+            integration: new apigw_integrations.HttpLambdaIntegration(
+                "GetKeyIntegration",
+                functions.generateKeyFunction
+            ),
             path: "/getkey",
             methods: [apigw.HttpMethod.GET],
         });
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new CompControlApiStack(app, "CompControlApiStack", {
     env: { region: "ap-southeast-2" },
 });

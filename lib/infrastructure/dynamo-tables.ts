@@ -1,8 +1,8 @@
-import * as cdk from "@aws-cdk/core";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
+import { Stack, RemovalPolicy } from "aws-cdk-lib";
+import { aws_dynamodb as dynamodb } from "aws-cdk-lib";
 
-export default function CompControlTables(stack: cdk.Stack) {
-    const defaultRemovalPolicy = cdk.RemovalPolicy.DESTROY;
+export default function CompControlTables(stack: Stack) {
+    const defaultRemovalPolicy = RemovalPolicy.DESTROY;
     const connectionsTable = new dynamodb.Table(
         stack,
         "CompControlConnectionsTable",

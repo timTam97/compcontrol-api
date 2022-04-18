@@ -1,14 +1,12 @@
-import * as cdk from "@aws-cdk/core";
-import * as apigw from "@aws-cdk/aws-apigatewayv2";
-import * as lambda from "@aws-cdk/aws-lambda";
+import { Stack, aws_apigatewayv2 as apigw } from "aws-cdk-lib";
+import { aws_lambda as lambda } from "aws-cdk-lib";
 import { lambdaFunctions } from "./lambda-functions";
-import { Certificate } from "@aws-cdk/aws-certificatemanager";
-
+import { aws_certificatemanager as certman } from "aws-cdk-lib";
 export default function CompControlWebsocket(
-    stack: cdk.Stack,
+    stack: Stack,
     wssApi: apigw.CfnApi,
     functions: lambdaFunctions,
-    cert: Certificate
+    cert: certman.Certificate
 ) {
     const wssAuth = new apigw.CfnAuthorizer(stack, "CompControlWebsocketAuth", {
         apiId: wssApi.ref,
