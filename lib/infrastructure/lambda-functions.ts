@@ -38,21 +38,25 @@ export default function CompControlFunctions(
         ],
     };
 
+    const defaultLambdaOptions = {
+        handler: "app.handler",
+        runtime: lambda.Runtime.PYTHON_3_9,
+        architecture: lambda.Architecture.ARM_64,
+        tracing: lambda.Tracing.ACTIVE,
+    };
+
     const websocketAuthorizer = new lambda.Function(
         stack,
         "WebsocketAuthorizer",
         {
+            ...defaultLambdaOptions,
             code: new lambda.AssetCode("lib/src/authwebsocket", {
                 bundling: defaultPythonBundling,
             }),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: keyTableName,
             },
-            architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
-            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
@@ -60,49 +64,40 @@ export default function CompControlFunctions(
         stack,
         "GenerateKeyFunction",
         {
+            ...defaultLambdaOptions,
             code: new lambda.AssetCode("lib/src/generatekey", {
                 bundling: defaultPythonBundling,
             }),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: keyTableName,
             },
-            architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
-            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
     const onConnectFunction = new lambda.Function(stack, "OnConnectFunction", {
+        ...defaultLambdaOptions,
         code: new lambda.AssetCode("lib/src/onconnect", {
             bundling: defaultPythonBundling,
         }),
-        handler: "app.handler",
-        runtime: lambda.Runtime.PYTHON_3_9,
         environment: {
             TABLE_NAME: connectionsTable.tableName,
         },
-        architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
-        tracing: lambda.Tracing.ACTIVE,
     });
 
     const onDisconnectFunction = new lambda.Function(
         stack,
         "OnDisconnectFunction",
         {
+            ...defaultLambdaOptions,
             code: new lambda.AssetCode("lib/src/ondisconnect", {
                 bundling: defaultPythonBundling,
             }),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
             },
-            architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
-            tracing: lambda.Tracing.ACTIVE,
         }
     );
 
@@ -110,11 +105,10 @@ export default function CompControlFunctions(
         stack,
         "SendCommandFunction",
         {
+            ...defaultLambdaOptions,
             code: new lambda.AssetCode("lib/src/sendcommand", {
                 bundling: defaultPythonBundling,
             }),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
                 KEY_TABLE_NAME: keyTableName,
@@ -122,9 +116,7 @@ export default function CompControlFunctions(
                 ALLOWED_COMMANDS:
                     '{"command1": "sleep", "command2": "hibernate", "command3": "shutdown","command4": "lock"}',
             },
-            architecture: lambda.Architecture.ARM_64,
             memorySize: 512,
-            tracing: lambda.Tracing.ACTIVE,
         }
     );
     sendCommandFunction.addToRolePolicy(
@@ -142,18 +134,15 @@ export default function CompControlFunctions(
     });
 
     const sendPingFunction = new lambda.Function(stack, "SendPingFunction", {
+        ...defaultLambdaOptions,
         code: new lambda.AssetCode("lib/src/sendping", {
             bundling: defaultPythonBundling,
         }),
-        handler: "app.handler",
-        runtime: lambda.Runtime.PYTHON_3_9,
         environment: {
             TABLE_NAME: connectionsTable.tableName,
             CONNECTION_BASE_URL: ApiGwConnectionBaseURL,
         },
-        architecture: lambda.Architecture.ARM_64,
         memorySize: 256,
-        tracing: lambda.Tracing.ACTIVE,
     });
     sendPingFunction.addToRolePolicy(
         new iam.PolicyStatement({
@@ -173,19 +162,16 @@ export default function CompControlFunctions(
         stack,
         "ToggleRuleFunction",
         {
+            ...defaultLambdaOptions,
             code: new lambda.AssetCode("lib/src/togglerules", {
                 bundling: defaultPythonBundling,
             }),
-            handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_9,
             environment: {
                 TABLE_NAME: connectionsTable.tableName,
                 WARMER_RULE_NAME: sendCommandWarmer.ruleName,
                 PING_RULE_NAME: scheduledPing.ruleName,
             },
-            architecture: lambda.Architecture.ARM_64,
             memorySize: 256,
-            tracing: lambda.Tracing.ACTIVE,
         }
     );
     toggleRulesFunction.addEventSource(
