@@ -1,114 +1,95 @@
-import { Stack, aws_apigatewayv2 as apigw } from "aws-cdk-lib";
-import { aws_lambda as lambda } from "aws-cdk-lib";
+import { Stack, aws_certificatemanager as certman } from "aws-cdk-lib";
 import { lambdaFunctions } from "./lambda-functions";
-import { aws_certificatemanager as certman } from "aws-cdk-lib";
+import * as apigw_alpha from "@aws-cdk/aws-apigatewayv2-alpha";
+import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import * as apigw_auth from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+
 export default function CompControlWebsocket(
     stack: Stack,
-    wssApi: apigw.CfnApi,
     functions: lambdaFunctions,
     cert: certman.Certificate
 ) {
-    const wssAuth = new apigw.CfnAuthorizer(stack, "CompControlWebsocketAuth", {
-        apiId: wssApi.ref,
-        authorizerType: "REQUEST",
-        identitySource: ["route.request.header.auth"],
-        name: "WebsocketAuth",
-        authorizerUri: `arn:aws:apigateway:${stack.region}:lambda:path/2015-03-31/functions/${functions.websocketAuthorizer.functionArn}/invocations`,
-    });
-    const authPerm = new lambda.CfnPermission(stack, "AuthorizerPermission", {
-        action: "lambda:InvokeFunction",
-        functionName: functions.websocketAuthorizer.functionName,
-        principal: "apigateway.amazonaws.com",
-    }).addDependsOn(wssApi);
+    const wssApi = new apigw_alpha.WebSocketApi(
+        stack,
+        "CompControlWebsocketApi",
+        {
+            apiName: "CompControlWebsocketApi",
+        }
+    );
 
-    // onConnect stuff
-    const wssConnectIntegration = new apigw.CfnIntegration(
+    const wssAuth = new apigw_auth.WebSocketLambdaAuthorizer(
+        "CompControlWebsocketAuth",
+        functions.websocketAuthorizer,
+        {
+            identitySource: ["route.request.header.auth"],
+        }
+    );
+
+    const wssConnectIntegration = new apigw_alpha.WebSocketIntegration(
         stack,
         "CompControlWebsocketConnectIntegration",
         {
-            apiId: wssApi.ref,
-            integrationType: "AWS_PROXY",
+            integrationType: apigw_alpha.WebSocketIntegrationType.AWS_PROXY,
             integrationUri: `arn:aws:apigateway:${stack.region}:lambda:path/2015-03-31/functions/${functions.onConnectFunction.functionArn}/invocations`,
+            webSocketApi: wssApi,
         }
     );
-    const connectRoute = new apigw.CfnRoute(stack, "OnConnectRoute", {
-        apiId: wssApi.ref,
-        routeKey: "$connect",
-        authorizationType: "CUSTOM",
-        authorizerId: wssAuth.ref,
-        target: "integrations/" + wssConnectIntegration.ref,
-    });
-    const connectPerm = new lambda.CfnPermission(stack, "OnConnectPermission", {
-        action: "lambda:InvokeFunction",
-        functionName: functions.onConnectFunction.functionName,
-        principal: "apigateway.amazonaws.com",
-    }).addDependsOn(wssApi);
 
-    // onDisconnect stuff
-    const wssDisconnectIntegration = new apigw.CfnIntegration(
+    const connectRoute = new apigw_alpha.WebSocketRoute(
         stack,
-        "CompControlWebsocketDisconnectIntegration",
+        "OnConnectRoute",
         {
-            apiId: wssApi.ref,
-            integrationType: "AWS_PROXY",
-            integrationUri: `arn:aws:apigateway:${stack.region}:lambda:path/2015-03-31/functions/${functions.onDisconnectFunction.functionArn}/invocations`,
+            integration: new apigw_integrations.WebSocketLambdaIntegration(
+                "onconnect",
+                functions.onConnectFunction
+            ),
+            routeKey: "$connect",
+            webSocketApi: wssApi,
+            authorizer: wssAuth,
         }
     );
-    const disconnectRoute = new apigw.CfnRoute(stack, "OnDisconnectRoute", {
-        apiId: wssApi.ref,
-        routeKey: "$disconnect",
-        target: "integrations/" + wssDisconnectIntegration.ref,
-    }).addDependsOn(wssApi);
-    const disconnectPerm = new lambda.CfnPermission(
+
+    const disconnectRoute = new apigw_alpha.WebSocketRoute(
         stack,
-        "OnDisconnectPermission",
+        "OnDisconnectRoute",
         {
-            action: "lambda:InvokeFunction",
-            functionName: functions.onDisconnectFunction.functionName,
-            principal: "apigateway.amazonaws.com",
+            integration: new apigw_integrations.WebSocketLambdaIntegration(
+                "ondisconnect",
+                functions.onDisconnectFunction
+            ),
+            routeKey: "$disconnect",
+            webSocketApi: wssApi,
         }
-    ).addDependsOn(wssApi);
+    );
 
-    // Set up autodeploy
-    const apiStage = new apigw.CfnStage(stack, "CompControlWebsocketStage", {
-        autoDeploy: true,
-        stageName: "prod",
-        apiId: wssApi.ref,
-    });
-
-    // Custom domain name stuff
-    const apiDomainName = new apigw.CfnDomainName(
+    const apiDomainName = new apigw_alpha.DomainName(
         stack,
         "CompControlWebsocketDomain",
         {
+            certificate: cert,
             domainName: "wss.timsam.live",
-            domainNameConfigurations: [
-                {
-                    certificateArn: cert.certificateArn,
-                },
-            ],
         }
     );
-    const apiMapping = new apigw.CfnApiMapping(
+
+    const apiStage = new apigw_alpha.WebSocketStage(
         stack,
-        "CompControlWebsocketApiMapping",
+        "CompControlWebsocketStage",
         {
-            apiId: wssApi.ref,
-            domainName: "wss.timsam.live",
-            stage: apiStage.ref,
+            stageName: "prod",
+            webSocketApi: wssApi,
+            autoDeploy: true,
+            domainMapping: {
+                domainName: apiDomainName,
+            },
         }
-    ).addDependsOn(apiDomainName);
+    );
 
     return {
+        wssApi,
         wssAuth,
-        authPerm,
         wssConnectIntegration,
         connectRoute,
-        connectPerm,
-        wssDisconnectIntegration,
         disconnectRoute,
-        disconnectPerm,
         apiStage,
-        apiMapping,
     };
 }

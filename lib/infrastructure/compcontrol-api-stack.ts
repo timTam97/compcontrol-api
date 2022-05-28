@@ -1,8 +1,12 @@
-import { Construct } from "constructs";
-import { App, Stack, StackProps, Tags, aws_apigatewayv2 } from "aws-cdk-lib";
+import {
+    App,
+    Stack,
+    StackProps,
+    Tags,
+    aws_certificatemanager as acm,
+} from "aws-cdk-lib";
 import * as apigw from "@aws-cdk/aws-apigatewayv2-alpha";
 import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
-import { aws_certificatemanager as acm } from "aws-cdk-lib";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
@@ -45,30 +49,25 @@ export class CompControlApiStack extends Stack {
             disableExecuteApiEndpoint: true,
         });
 
-        /**
-         * Create base websocket API
-         * Need to do this here as we need the base URL of this API for one of the lambdas.
-         * also i want L2 constructs (with authorizers!) :(
-         */
-        const wssApi = new aws_apigatewayv2.CfnApi(
-            this,
-            "CompControlWebsocketApi",
-            {
-                protocolType: "WEBSOCKET",
-                routeSelectionExpression: "$request.body.action",
-                name: "CompControlWebsocketApi",
-                disableExecuteApiEndpoint: true,
-            }
-        );
-
         // Lambda stuff
         const functions = CompControlFunctions(
             this,
             connectionsTable,
             keyTable.tableName,
-            "https://wss.timsam.live",
-            wssApi.ref
+            "https://wss.timsam.live"
         );
+
+        // Websocket API setup
+        const wssApiConstructs = CompControlWebsocket(
+            this,
+            functions,
+            customDomainCert
+        );
+        const wssApi = wssApiConstructs.wssApi;
+
+        wssApi.grantManageConnections(functions.websocketAuthorizer);
+        wssApi.grantManageConnections(functions.sendCommandFunction);
+        wssApi.grantManageConnections(functions.sendPingFunction);
 
         connectionsTable.grantReadData(functions.sendPingFunction);
         connectionsTable.grantReadData(functions.sendCommandFunction);
@@ -78,9 +77,6 @@ export class CompControlApiStack extends Stack {
         keyTable.grantReadData(functions.websocketAuthorizer);
         keyTable.grantReadData(functions.sendCommandFunction);
         keyTable.grantReadWriteData(functions.generateKeyFunction);
-
-        // Websocket API setup
-        CompControlWebsocket(this, wssApi, functions, customDomainCert);
 
         // Adding Lambda integrations for HTTP API
         api.addRoutes({

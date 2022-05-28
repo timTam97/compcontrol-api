@@ -1,10 +1,14 @@
-import { Stack, BundlingOptions, Duration } from "aws-cdk-lib";
-import { aws_lambda as lambda } from "aws-cdk-lib";
-import { aws_iam as iam } from "aws-cdk-lib";
-import { aws_events as events } from "aws-cdk-lib";
-import { aws_events_targets as targets } from "aws-cdk-lib";
-import { aws_lambda_event_sources as sources } from "aws-cdk-lib";
-import { aws_dynamodb as dynamodb } from "aws-cdk-lib";
+import {
+    Stack,
+    BundlingOptions,
+    Duration,
+    aws_lambda as lambda,
+    aws_iam as iam,
+    aws_events as events,
+    aws_events_targets as targets,
+    aws_lambda_event_sources as sources,
+    aws_dynamodb as dynamodb,
+} from "aws-cdk-lib";
 
 export interface lambdaFunctions {
     websocketAuthorizer: lambda.Function;
@@ -22,8 +26,7 @@ export default function CompControlFunctions(
     stack: Stack,
     connectionsTable: dynamodb.Table,
     keyTableName: string,
-    ApiGwConnectionBaseURL: string,
-    wssApiRef: string
+    ApiGwConnectionBaseURL: string
 ): lambdaFunctions {
     /**
      * Bundling knowledge is from
@@ -119,15 +122,6 @@ export default function CompControlFunctions(
             memorySize: 512,
         }
     );
-    sendCommandFunction.addToRolePolicy(
-        new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: ["execute-api:ManageConnections"],
-            resources: [
-                `arn:aws:execute-api:${stack.region}:${stack.account}:${wssApiRef}/*`,
-            ],
-        })
-    );
     const sendCommandWarmer = new events.Rule(stack, "SendCommandWarmer", {
         schedule: events.Schedule.rate(Duration.minutes(3)),
         targets: [new targets.LambdaFunction(sendCommandFunction)],
@@ -144,15 +138,6 @@ export default function CompControlFunctions(
         },
         memorySize: 256,
     });
-    sendPingFunction.addToRolePolicy(
-        new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: ["execute-api:ManageConnections"],
-            resources: [
-                `arn:aws:execute-api:${stack.region}:${stack.account}:${wssApiRef}/*`,
-            ],
-        })
-    );
     const scheduledPing = new events.Rule(stack, "ScheduledPing", {
         schedule: events.Schedule.rate(Duration.minutes(1)),
         targets: [new targets.LambdaFunction(sendPingFunction)],
