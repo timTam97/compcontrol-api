@@ -5,8 +5,8 @@ import {
     Tags,
     aws_certificatemanager as acm,
 } from "aws-cdk-lib";
-import * as apigw from "@aws-cdk/aws-apigatewayv2-alpha";
-import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
+import * as apigw_integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import CompControlTables from "./dynamo-tables";
 import CompControlFunctions from "./lambda-functions";
 import CompControlWebsocket from "./websocket-support";
@@ -25,7 +25,7 @@ export class CompControlApiStack extends Stack {
             this,
             "CompControlApiDomainCert",
             {
-                domainName: "*.timsam.live",
+                domainName: "*.timsam.au",
                 validation: acm.CertificateValidation.fromDns(),
             }
         );
@@ -37,7 +37,7 @@ export class CompControlApiStack extends Stack {
             this,
             "CompControlCommandDomain",
             {
-                domainName: "command.timsam.live",
+                domainName: "command.timsam.au",
                 certificate: customDomainCert,
             }
         );
@@ -54,7 +54,7 @@ export class CompControlApiStack extends Stack {
             this,
             connectionsTable,
             keyTable.tableName,
-            "https://wss.timsam.live"
+            "https://wss.timsam.au"
         );
 
         // Websocket API setup

@@ -1,15 +1,15 @@
 import { Stack, aws_certificatemanager as certman } from "aws-cdk-lib";
 import { lambdaFunctions } from "./lambda-functions";
-import * as apigw_alpha from "@aws-cdk/aws-apigatewayv2-alpha";
-import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
-import * as apigw_auth from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import * as apigw from "aws-cdk-lib/aws-apigatewayv2";
+import * as apigw_integrations from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as apigw_auth from "aws-cdk-lib/aws-apigatewayv2-authorizers";
 
 export default function CompControlWebsocket(
     stack: Stack,
     functions: lambdaFunctions,
     cert: certman.Certificate
 ) {
-    const wssApi = new apigw_alpha.WebSocketApi(
+    const wssApi = new apigw.WebSocketApi(
         stack,
         "CompControlWebsocketApi",
         {
@@ -25,17 +25,7 @@ export default function CompControlWebsocket(
         }
     );
 
-    const wssConnectIntegration = new apigw_alpha.WebSocketIntegration(
-        stack,
-        "CompControlWebsocketConnectIntegration",
-        {
-            integrationType: apigw_alpha.WebSocketIntegrationType.AWS_PROXY,
-            integrationUri: `arn:aws:apigateway:${stack.region}:lambda:path/2015-03-31/functions/${functions.onConnectFunction.functionArn}/invocations`,
-            webSocketApi: wssApi,
-        }
-    );
-
-    const connectRoute = new apigw_alpha.WebSocketRoute(
+    const connectRoute = new apigw.WebSocketRoute(
         stack,
         "OnConnectRoute",
         {
@@ -49,7 +39,7 @@ export default function CompControlWebsocket(
         }
     );
 
-    const disconnectRoute = new apigw_alpha.WebSocketRoute(
+    const disconnectRoute = new apigw.WebSocketRoute(
         stack,
         "OnDisconnectRoute",
         {
@@ -62,16 +52,16 @@ export default function CompControlWebsocket(
         }
     );
 
-    const apiDomainName = new apigw_alpha.DomainName(
+    const apiDomainName = new apigw.DomainName(
         stack,
         "CompControlWebsocketDomain",
         {
             certificate: cert,
-            domainName: "wss.timsam.live",
+            domainName: "wss.timsam.au",
         }
     );
 
-    const apiStage = new apigw_alpha.WebSocketStage(
+    const apiStage = new apigw.WebSocketStage(
         stack,
         "CompControlWebsocketStage",
         {
@@ -87,7 +77,6 @@ export default function CompControlWebsocket(
     return {
         wssApi,
         wssAuth,
-        wssConnectIntegration,
         connectRoute,
         disconnectRoute,
         apiStage,

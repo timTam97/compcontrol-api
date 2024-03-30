@@ -14,7 +14,7 @@ This is a serverless AWS application that enables remote computer control. It co
 
 The recommended way of consuming this API is to use [compcontrol-client](https://github.com/timTam97/compcontrol-client). See the [client apps](#client-apps) section below.
 
-This API is live across various domains (`api.timsam.live` and `wss.timsam.live`).
+This API is live across various domains (`api.timsam.au` and `wss.timsam.au`).
 
 ## Client Apps
 
@@ -22,7 +22,7 @@ This API is live across various domains (`api.timsam.live` and `wss.timsam.live`
 
 ## Setup
 
-As mentioned above, this API is already deployed across multiple domains on `timsam.live`.
+As mentioned above, this API is already deployed across multiple domains on `timsam.au`.
 
 If you want to build and deploy it yourself, then:
 
@@ -37,9 +37,9 @@ If you want to build and deploy it yourself, then:
 
 _Note:_ You probably only need the WebSocket information if you're writing a client app to interface with this API. If you're already using a client app ([over here](https://github.com/timTam97/compcontrol-client)) and want to send commands to your computer, see the REST API section below.
 
-You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.live/getkey to get your key.
+You first need an API key before you can interact with any of the APIs. First, go to https://command.timsam.au/getkey to get your key.
 
-After you have your key, you can now connect to the WebSocket as well as send commands. The URI for connecting to the websocket is `wss://wss.timsam.live/`. Pass your authentication token in the header with key `auth`.
+After you have your key, you can now connect to the WebSocket as well as send commands. The URI for connecting to the websocket is `wss://wss.timsam.au/`. Pass your authentication token in the header with key `auth`.
 
 All messages sent are JSON objects with a `type` key, with an optional `subtype` key.
 
@@ -55,7 +55,7 @@ All messages sent are JSON objects with a `type` key, with an optional `subtype`
 
 If you're running compcontrol-client and you want to send commands to your machine, see the [sending commands](https://github.com/timTam97/compcontrol-client#sending-commands) section in the client repo.
 
-The URL to send commands to is `https://command.timsam.live/send/<command>`.
+The URL to send commands to is `https://command.timsam.au/send/<command>`.
 
 -   Replace `<command>` with the command you want to send to the client.
     -   ❗ The client will only respond to `sleep`, `shutdown`, `lock` and `hibernate` commands.
@@ -67,7 +67,7 @@ For example, if you wanted to send a sleep command and your token was `fwolXHYtG
 
 ```
 curl -H "auth: fwolXHYtGMbmAg" \
-     -X POST https://command.timsam.live/send/sleep
+     -X POST https://command.timsam.au/send/sleep
 ```
 
 If the request was successful, you will get a `200`. If your token is accepted but there are no connected clients to send the command to, you will receive a `404`.
